@@ -1,0 +1,58 @@
+bundle:
+  name: genie-agent-app
+
+variables:
+  genie_space_id:
+    description: Genie Agent (space) ID used in Agent mode (the agent_id)
+  genie_space_name:
+    description: Genie Agent (space) display name
+
+# Local-only state must never reach the deployed app: .env carries
+# GENIE_AGENT_MOCK and would silently flip the deployment into mock mode.
+sync:
+  exclude:
+    - .env
+    - node_modules
+    - .databricks
+    - .smoke-test
+    - test-results
+    - playwright-report
+
+resources:
+  apps:
+    app:
+      name: "genie-agent-app"
+      description: "Genie Agent mode app with dashboard and streaming chat, built with AppKit"
+      source_code_path: ./
+
+      # Start the app automatically on deploy.
+      lifecycle:
+        started: true
+
+      # On-behalf-of-user OAuth scope for the Genie Agents API. `dashboards.genie`
+      # is the deprecated alias of `genie` (Databricks Apps authorization docs).
+      user_api_scopes:
+        - genie
+
+      # The resources which this app has access to.
+      resources:
+        - name: genie-space
+          genie_space:
+            name: ${var.genie_space_name}
+            space_id: ${var.genie_space_id}
+            permission: CAN_RUN
+
+targets:
+  default:
+    default: true
+    workspace:
+      # Replace with your workspace before deploying, e.g.:
+      #   https://adb-1234567890123456.7.azuredatabricks.net  (Azure Databricks)
+      #   https://your-workspace.cloud.databricks.com         (AWS / GCP Databricks)
+      host: https://your-workspace.cloud.databricks.com
+
+    # Required: fill in the real Genie Agent (space) before deploying, or pass
+    # --var genie_space_id=<id> --var genie_space_name=<name> on the command line.
+    # variables:
+    #   genie_space_id: <space-id>
+    #   genie_space_name: <display-name>

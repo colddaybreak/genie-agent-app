@@ -1,0 +1,52 @@
+{
+  "$schema": "https://databricks.github.io/appkit/schemas/plugin-manifest.schema.json",
+  "name": "genieAgent",
+  "displayName": "Genie Agent",
+  "description": "Genie Agent mode (Responses-style SSE API at /api/2.0/genie/agents/{agent_id}/responses) with streaming tool calls, thinking steps, and visualizations",
+  "version": "0.1.0",
+  "stability": "beta",
+  "scopes": ["genie"],
+  "resources": {
+    "required": [],
+    "optional": [
+      {
+        "type": "genie_space",
+        "alias": "Genie Agent (Space)",
+        "resourceKey": "genie-space",
+        "description": "Genie space queried in Agent mode. Its space ID doubles as the agent_id for /api/2.0/genie/agents/{agent_id}/responses.",
+        "permission": "CAN_RUN",
+        "fields": {
+          "id": {
+            "env": "DATABRICKS_GENIE_AGENT_ID",
+            "description": "Genie Agent (space) ID",
+            "discovery": {
+              "type": "kind",
+              "resourceKind": "genie_space"
+            }
+          }
+        }
+      }
+    ]
+  },
+  "config": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "agents": {
+          "type": "object",
+          "description": "Map of alias names to Genie Agent (space) IDs",
+          "additionalProperties": { "type": "string" }
+        },
+        "timeout": {
+          "type": "number",
+          "default": 1800000,
+          "description": "Max stream duration in ms. Server-side Genie Agent timeout is 30 minutes, so the default matches it."
+        },
+        "mock": {
+          "type": "boolean",
+          "description": "Serve scripted agent responses instead of calling Databricks. Also enabled by GENIE_AGENT_MOCK=true."
+        }
+      }
+    }
+  }
+}

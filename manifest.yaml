@@ -1,0 +1,12 @@
+version: 1
+name: "AppKit - Genie Agent"
+description: "A Node.js app for Genie Agent mode: dashboard plus streaming chat with tool calls, tables, and charts, built with AppKit."
+
+resource_specs:
+  - name: "genie-space"
+    description: "The AI/BI Genie space (agent) the app queries in Agent mode."
+    genie_space_spec:
+      permission: "CAN_RUN"
+
+user_api_scopes:
+  - "genie"

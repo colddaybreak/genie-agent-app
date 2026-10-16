@@ -1,0 +1,40 @@
+bundle:
+  name: {{.projectName}}
+{{- if .bundle.variables}}
+
+variables:
+{{.bundle.variables}}
+{{- end}}
+
+resources:
+  apps:
+    app:
+      name: "{{.projectName}}"
+      description: "{{.appDescription}}"
+      source_code_path: ./
+
+      # Start the app automatically on deploy.
+      lifecycle:
+        started: true
+
+      # On-behalf-of-user OAuth scope for the Genie Agents API. `dashboards.genie`
+      # is the deprecated alias of `genie` (Databricks Apps authorization docs).
+      user_api_scopes:
+        - genie
+{{- if .bundle.resources}}
+
+      # The resources which this app has access to.
+      resources:
+{{.bundle.resources}}
+{{- end}}
+
+targets:
+  default:
+    default: true
+    workspace:
+      host: {{.workspaceHost}}
+{{- if .bundle.targetVariables}}
+
+    variables:
+{{.bundle.targetVariables}}
+{{- end}}

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://databricks.github.io/appkit/schemas/plugin-manifest.schema.json",
+  "name": "workspace",
+  "displayName": "Workspace Explorer",
+  "description": "Current user identity and Unity Catalog metadata (catalogs, schemas, tables) for the dashboard",
+  "version": "0.1.0",
+  "stability": "beta",
+  "resources": {
+    "required": [],
+    "optional": []
+  }
+}
