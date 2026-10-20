@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import type { TimelineEntry } from '@/hooks/use-genie-agent-chat';
 import type { FunctionCallOutputItem } from '@/lib/genie-types';
+import { AnswerChart } from './answer-chart';
 import { MessageBubble } from './message-bubble';
-import { QueryResultCard } from './query-result-card';
 import { ThoughtProcess } from './thought-process';
 
 interface TimelineProps {
@@ -95,7 +95,7 @@ function TurnView({
       {!running &&
         charts.map((entry) => (
           <div key={`chart_${entry.key}`} className="pl-11">
-            <QueryResultCard item={entry.item} title={titles.get(entry.item.call_id)} />
+            <AnswerChart item={entry.item} title={titles.get(entry.item.call_id)} />
           </div>
         ))}
     </div>

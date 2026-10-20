@@ -7,8 +7,9 @@ import {
 } from '@databricks/appkit-ui/react';
 import { BrainCircuit, ChevronRight } from 'lucide-react';
 import type { TimelineEntry } from '@/hooks/use-genie-agent-chat';
+import type { FunctionCallItem } from '@/lib/genie-types';
 import { cn } from '@/lib/utils';
-import { QueryResultCard } from './query-result-card';
+import { QueryExecution } from './query-execution';
 import { ToolCallCard } from './tool-call-card';
 
 interface ThoughtProcessProps {
@@ -36,47 +37,18 @@ function useElapsedSeconds(
   return end == null ? null : Math.max(0, Math.round((end - startedAt) / 1000));
 }
 
-function ThoughtStep({
-  entry,
-  titles,
-  turnRunning,
-}: {
-  entry: TimelineEntry;
-  titles: Map<string, string>;
-  turnRunning: boolean;
-}) {
-  const running = entry.phase !== 'done';
-  switch (entry.item.type) {
-    case 'reasoning': {
-      const text = (entry.item.summary ?? [])
-        .map((part) => part.text)
-        .join('\n\n')
-        .trim();
-      return (
-        <div className="ml-2 border-l-2 border-border py-1 pl-3 text-xs whitespace-pre-wrap break-words text-muted-foreground">
-          {text || '…'}
-        </div>
-      );
-    }
-    case 'function_call':
-      return <ToolCallCard item={entry.item} running={running} />;
-    case 'function_call_output':
-      return (
-        <QueryResultCard
-          item={entry.item}
-          title={titles.get(entry.item.call_id)}
-          compact={!turnRunning}
-        />
-      );
-    default:
-      return null;
-  }
+function ReasoningText({ text }: { text: string }) {
+  return (
+    <p className="text-xs leading-relaxed whitespace-pre-wrap break-words text-muted-foreground">
+      {text || '…'}
+    </p>
+  );
 }
 
 /**
- * One collapsible "thought process" per turn: reasoning, tool calls, and query
- * results stay visible while streaming and fold into a single affordance once
- * the final answer arrives. Charts move out to the answer (see Timeline).
+ * One large collapsible "thought process" per turn: reasoning, executed
+ * queries, and generated results stay inside a single panel while streaming,
+ * then fold into one affordance once the final answer arrives.
  */
 export function ThoughtProcess({
   entries,
@@ -89,6 +61,13 @@ export function ThoughtProcess({
   const open = manualOpen ?? running;
   const elapsed = useElapsedSeconds(startedAt, endedAt, running);
 
+  const callById = new Map<string, FunctionCallItem>();
+  const outputCallIds = new Set<string>();
+  for (const entry of entries) {
+    if (entry.item.type === 'function_call') callById.set(entry.item.call_id, entry.item);
+    if (entry.item.type === 'function_call_output') outputCallIds.add(entry.item.call_id);
+  }
+
   const label = running
     ? 'Thinking…'
     : elapsed != null
@@ -96,23 +75,47 @@ export function ThoughtProcess({
       : 'Thought process';
 
   return (
-    <Collapsible open={open} onOpenChange={setManualOpen} className="max-w-[80%] min-w-0">
-      <CollapsibleTrigger
-        className={cn(
-          'flex items-center gap-2 rounded-md px-2 py-1 text-xs text-muted-foreground',
-          'transition-colors hover:bg-muted hover:text-foreground',
-        )}
-      >
+    <Collapsible
+      open={open}
+      onOpenChange={setManualOpen}
+      className="max-w-[85%] min-w-0 rounded-lg border bg-muted/20"
+    >
+      <CollapsibleTrigger className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-muted-foreground transition-colors hover:text-foreground">
         <ChevronRight className={cn('size-3.5 transition-transform', open && 'rotate-90')} />
         <BrainCircuit className="size-3.5" />
         <span className="font-medium">{label}</span>
         {running && <Spinner className="size-3" />}
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <div className="mt-1 flex flex-col gap-2">
-          {entries.map((entry) => (
-            <ThoughtStep key={entry.key} entry={entry} titles={titles} turnRunning={running} />
-          ))}
+        <div className="flex flex-col gap-3 border-t px-3 py-3">
+          {entries.map((entry) => {
+            if (entry.item.type === 'reasoning') {
+              const text = (entry.item.summary ?? [])
+                .map((part) => part.text)
+                .join('\n\n')
+                .trim();
+              return <ReasoningText key={entry.key} text={text} />;
+            }
+            if (entry.item.type === 'function_call') {
+              // Rendered together with its result once the output arrives.
+              if (outputCallIds.has(entry.item.call_id)) return null;
+              return (
+                <ToolCallCard key={entry.key} item={entry.item} running={entry.phase !== 'done'} />
+              );
+            }
+            if (entry.item.type === 'function_call_output') {
+              const output = entry.item;
+              return (
+                <QueryExecution
+                  key={entry.key}
+                  call={callById.get(output.call_id)}
+                  output={output}
+                  title={titles.get(output.call_id)}
+                />
+              );
+            }
+            return null;
+          })}
         </div>
       </CollapsibleContent>
     </Collapsible>
