@@ -58,10 +58,11 @@ interface ChartBodyProps {
   chart: ChartPayload;
   chartType: ChartType;
   xKey: string;
+  orientation: 'vertical' | 'horizontal';
   height: number;
 }
 
-function ChartBody({ chart, chartType, xKey, height }: ChartBodyProps) {
+function ChartBody({ chart, chartType, xKey, orientation, height }: ChartBodyProps) {
   return (
     <BaseChart
       data={chart.data}
@@ -69,6 +70,7 @@ function ChartBody({ chart, chartType, xKey, height }: ChartBodyProps) {
       xKey={xKey}
       yKey={chart.yKeys}
       showLegend={chart.showLegend}
+      orientation={orientation}
       height={height}
     />
   );
@@ -121,6 +123,7 @@ export function AnswerChart({ item, title }: AnswerChartProps) {
   }, [dimensionColumns, numericColumns, rows, table]);
 
   const [chartType, setChartType] = useState<ChartType>('bar');
+  const [orientation, setOrientation] = useState<'vertical' | 'horizontal'>('vertical');
   const [xKey, setXKey] = useState(defaults.xKey);
   const [yKey, setYKey] = useState(defaults.yKey);
   const [seriesKey, setSeriesKey] = useState(defaults.seriesKey);
@@ -203,6 +206,22 @@ export function AnswerChart({ item, title }: AnswerChartProps) {
                     {type.label}
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs font-medium">Orientation</p>
+            <Select
+              value={orientation}
+              onValueChange={(value) => setOrientation(value as 'vertical' | 'horizontal')}
+              disabled={chartType === 'pie' || chartType === 'donut'}
+            >
+              <SelectTrigger className="h-8 w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="vertical">Vertical</SelectItem>
+                <SelectItem value="horizontal">Horizontal</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -291,7 +310,13 @@ export function AnswerChart({ item, title }: AnswerChartProps) {
         </TabsList>
         <TabsContent value="chart" className="mt-2">
           {chart ? (
-            <ChartBody chart={chart} chartType={chartType} xKey={xKey} height={260} />
+            <ChartBody
+              chart={chart}
+              chartType={chartType}
+              xKey={xKey}
+              orientation={orientation}
+              height={260}
+            />
           ) : (
             <ResultTable table={table} />
           )}
@@ -318,7 +343,15 @@ export function AnswerChart({ item, title }: AnswerChartProps) {
               <TabsTrigger value="table">Table</TabsTrigger>
             </TabsList>
             <TabsContent value="chart" className="min-h-0 flex-1 overflow-auto">
-              {chart && <ChartBody chart={chart} chartType={chartType} xKey={xKey} height={460} />}
+              {chart && (
+                <ChartBody
+                  chart={chart}
+                  chartType={chartType}
+                  xKey={xKey}
+                  orientation={orientation}
+                  height={460}
+                />
+              )}
             </TabsContent>
             <TabsContent value="table" className="min-h-0 flex-1">
               <ResultTable table={table} className="max-h-full" />
