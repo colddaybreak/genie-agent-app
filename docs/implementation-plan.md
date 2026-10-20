@@ -41,7 +41,7 @@
 
 | 项 | 内容 | 前置 |
 |---|---|---|
-| P3-1 | `databricks.yml` 真实资源绑定：`genie-space`、`user_api_scopes: [genie]`、目标 host | 用户提供 workspace 与 space/agent id |
+| P3-1 | `databricks.yml` 真实资源绑定：`genie-space`、`user_api_scopes`（`genie` + catalog read scopes）、目标 host | 用户提供 workspace 与 space/agent id |
 | P3-2 | 部署验证：`databricks bundle deploy` + 授权页确认用户 scope | 见 open-questions Q1/Q2 |
 | P3-3 | 联调录屏与问题闭环 | — |
 

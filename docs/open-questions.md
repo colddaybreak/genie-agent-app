@@ -7,7 +7,7 @@
 |---|---|---|---|---|
 | Q1 | 目标工作区是否已开放 Genie **Agent mode**（`FEATURE_DISABLED` 与否）？ | R3 能否真实联通 | open | 在 Workspace 里创建/打开一个 Genie Agent，确认可访问 |
 | Q2 | Genie **Agent ID** 是什么？所属 Genie Space ID 是什么？ | 配置 `genie-agent-id` / `genie-space-id` | open | 提供 agent_id 与 space_id（可从页面 URL 获取） |
-| Q3 | Agent 调用需要的用户授权 scope 是否就是 `genie`？是否还需 `dashboards.genie`？ | `databricks.yml` 的 `user_api_scopes` | **answered（2026-10-16）** | 只需 `genie`。证据：① 官方 API Reference 标注 required scope 为 `genie`；② AppKit 自身 `SCOPE_BY_TYPE` 将 `genie_space` 映射为 `genie`（`dist/schemas/manifest.js`）；③ Databricks Apps 授权文档明确 `dashboards.genie` 为 deprecated 别名、映射到 `genie`。已同步修正 `databricks.yml` 与 `manifest.yaml` |
+| Q3 | Agent 调用需要的用户授权 scope 是否就是 `genie`？是否还需 `dashboards.genie`？ | `databricks.yml` 的 `user_api_scopes` | **answered（2026-10-16）** | 只需 `genie`。证据：① 官方 API Reference 标注 required scope 为 `genie`；② AppKit 自身 `SCOPE_BY_TYPE` 将 `genie_space` 映射为 `genie`（`dist/schemas/manifest.js`）；③ Databricks Apps 授权文档明确 `dashboards.genie` 为 deprecated 别名、映射到 `genie`。已同步修正 `databricks.yml` 与 `manifest.yaml`。**2026-10-20 补充**：workspace 插件的 Unity Catalog 元数据路由另需 `catalog.catalogs:read` / `catalog.schemas:read` / `catalog.tables:read`；`unity-catalog` 不是合法的 Apps user scope（官方 auth 文档已确认）。 |
 | Q4 | `GET /api/2.0/genie/spaces/{space_id}/conversations` 返回的列表是否**包含 Agent 会话**（`agent_type` 取值集合）？ | Dashboard 会话统计的数据源 | open（指南只说明该接口提供 `agent_type`，未给出枚举值） | 真实环境调用一次，抓取样例响应 |
 | Q5 | Agent Item 恢复接口 `GET .../items` 的 `limit/order/after` 行为与响应字段是否与指南一致（`data/first_id/last_id/has_more/status`）？ | 刷新恢复与分页 | open | 同上，抓取真实响应 |
 | Q6 | Agent 的 `message`/`function_call_output` 是否会返回**图片**（含何种字段/格式，如 Markdown 内联图片或独立 image Item）？ | R6「渲染图片」的真实路径 | open | 抓取含图表的真实响应样例 |

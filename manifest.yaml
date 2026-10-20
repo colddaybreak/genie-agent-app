@@ -10,3 +10,6 @@ resource_specs:
 
 user_api_scopes:
   - "genie"
+  - "catalog.catalogs:read"
+  - "catalog.schemas:read"
+  - "catalog.tables:read"

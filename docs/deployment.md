@@ -40,13 +40,13 @@ databricks apps deploy
 
 | 文件 | 字段 | 值 | 状态 |
 |---|---|---|---|
-| databricks.yml | `user_api_scopes` | `[genie]` | ✅ 已修正（`dashboards.genie` 为 deprecated 别名，官方 auth 文档明确映射到 `genie`；AppKit `SCOPE_BY_TYPE` 亦将 `genie_space` 解析为 `genie`） |
+| databricks.yml | `user_api_scopes` | `[genie, catalog.catalogs:read, catalog.schemas:read, catalog.tables:read]` | ✅ `dashboards.genie` 为 `genie` 的 deprecated 别名；Unity Catalog 元数据路由需要 catalog read scopes（官方 Apps auth 文档；`unity-catalog` 不是合法 Apps user scope） |
 | databricks.yml | `resources.apps.app.resources` | `genie_space: { name, space_id, permission: CAN_RUN }` | ✅ 与 AppKit `DABS_BINDING_BY_TYPE` 契约一致（yamlKey `genie_space`；`name→name`、`id→space_id`；权限枚举含 CAN_RUN） |
 | databricks.yml | `sync.exclude` | `.env` / `node_modules` / 测试产物 | ✅ 新增（防止 `GENIE_AGENT_MOCK=true` 泄漏进生产） |
 | databricks.yml | `targets.default.workspace.host` | 占位符（模板默认 `https://your-workspace.cloud.databricks.com`） | ⚠️ 部署前替换为实际工作区地址 |
 | databricks.yml | `variables.genie_space_id / genie_space_name` | 无默认值 | ⚠️ 部署时必须提供（见 §4） |
 | app.yaml | `env.DATABRICKS_GENIE_AGENT_ID` | `valueFrom: genie-space` | ✅ 已配置 |
-| manifest.yaml | `resource_specs` / `user_api_scopes` | `CAN_RUN` / `[genie]` | ✅ 已对齐 |
+| manifest.yaml | `resource_specs` / `user_api_scopes` | `CAN_RUN` / `[genie + catalog read scopes]` | ✅ 已对齐 |
 
 ## 4. 部署步骤
 
@@ -74,7 +74,7 @@ databricks apps logs genie-agent-app --follow
 
 ## 5. 授权与权限
 
-- **用户（OBO）**：genieAgent 全部路由经 `_asUserScoped(req)` 运行，平台代理注入用户令牌；`user_api_scopes: [genie]` 声明后由平台完成授权流程。Genie Agents API 的必需 scope 即 `genie`（官方 API Reference）。
+- **用户（OBO）**：genieAgent 与 workspace 的全部路由经 `_asUserScoped(req)` 运行，平台代理注入用户令牌；`user_api_scopes` 声明 `genie`（Genie Agents API）与 `catalog.catalogs:read` / `catalog.schemas:read` / `catalog.tables:read`（Unity Catalog 元数据 GET）。新增 scope 后用户需重新同意授权。
 - **服务主体（SP）**：资源绑定授予 SP `CAN_RUN`（databricks.yml）。SP 还需对 Genie Agent 底层数据源具备访问权限（官方 Genie 资源文档）。
 - **使用者**：被分享的用户本身需有权限运行该 Genie Agent，否则 OBO 调用返回 403。
 - **可选共享（参照此前 chatbot app）**：
@@ -112,7 +112,7 @@ databricks apps logs genie-agent-app --follow
 |---|---|---|
 | 部署机制 | DABs + `databricks apps deploy` 增强管道（CLI 1.16.0） | 相同管道（本机 CLI v0.298.0 已实测支持） |
 | 资源绑定 | serving_endpoint `CAN_QUERY`（另有 Lakebase 数据库、experiment） | genie_space `CAN_RUN`（无数据库；会话由 Genie 侧持久化） |
-| user_api_scopes | `[model-serving]` | `[genie]` |
+| user_api_scopes | `[model-serving]` | `[genie + catalog read scopes]` |
 | 启动 | `app.yaml` `command: ["npm","run","start"]` | 相同 |
 | 目标管理 | dev / staging / prod 三 target + 资源名后缀 | 当前仅 default target（需要时再加） |
 | 权限/成本 | 组 CAN_MANAGE / CAN_USE + `budget_policy_id` | 未配置（见 §5 可选步骤） |

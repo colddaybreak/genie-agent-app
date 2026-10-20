@@ -17,10 +17,15 @@ resources:
       lifecycle:
         started: true
 
-      # On-behalf-of-user OAuth scope for the Genie Agents API. `dashboards.genie`
-      # is the deprecated alias of `genie` (Databricks Apps authorization docs).
+      # On-behalf-of-user OAuth scopes: `genie` for the Genie Agents API
+      # (`dashboards.genie` is its deprecated alias) and the catalog read
+      # scopes for the Unity Catalog metadata routes behind the dashboard.
+      # `unity-catalog` is not a valid Apps user scope.
       user_api_scopes:
-        - genie
+        - "genie"
+        - "catalog.catalogs:read"
+        - "catalog.schemas:read"
+        - "catalog.tables:read"
 {{- if .bundle.resources}}
 
       # The resources which this app has access to.

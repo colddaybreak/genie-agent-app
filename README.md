@@ -66,7 +66,7 @@ databricks apps deploy \
   --var="genie_space_id=<SPACE_ID>" --var="genie_space_name=<Display Name>"
 ```
 
-- The app name and resources are defined in `databricks.yml` (`resources.apps.app`); Genie access is injected through the `genie-space` resource (service principal `CAN_RUN`, user authorization scope `genie`).
+- The app name and resources are defined in `databricks.yml` (`resources.apps.app`); Genie access is injected through the `genie-space` resource (service principal `CAN_RUN`); user authorization requests `genie` plus `catalog.catalogs:read` / `catalog.schemas:read` / `catalog.tables:read` for the dashboard's Unity Catalog routes.
 - Never set `GENIE_AGENT_MOCK` in production: the local `.env` is excluded by `sync.exclude` and is never uploaded by a deployment.
 - Full checklist, permission model, post-deploy verification, and rollback: see [docs/deployment.md](docs/deployment.md).
 

@@ -1,7 +1,12 @@
+import path from 'node:path';
 import { appkitServerConfig } from '@databricks/appkit/tsdown';
 
-// AppKit's server build preset. When you keep code agents in `server/agents/`,
-// it auto-includes them as build entries so discovery works in a bundled build.
-// Customize with overrides — `appkitServerConfig({ external, define, ... })` —
-// or a function form for full control: `appkitServerConfig((base) => ({ ...base }))`.
-export default appkitServerConfig();
+// AppKit's defaults assume POSIX paths: on Windows the `external` test treats
+// drive-letter paths as bare package ids, and unbundle mode fails on paths with
+// spaces. Bundle local modules and only externalize real packages.
+export default appkitServerConfig((base) => ({
+  ...base,
+  unbundle: false,
+  external: (id: string) =>
+    (!path.isAbsolute(id) && /^[^./]/.test(id)) || id.includes('node_modules'),
+}));

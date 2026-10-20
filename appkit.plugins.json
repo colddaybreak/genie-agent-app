@@ -565,6 +565,11 @@
         "required": [],
         "optional": []
       },
+      "scopes": [
+        "catalog.catalogs:read",
+        "catalog.schemas:read",
+        "catalog.tables:read"
+      ],
       "stability": "beta"
     }
   },

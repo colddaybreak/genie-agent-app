@@ -66,7 +66,7 @@ databricks apps deploy \
   --var="genie_space_id=<SPACE_ID>" --var="genie_space_name=<Display Name>"
 ```
 
-- app 名称与资源定义在 `databricks.yml`（`resources.apps.app`）；Genie 访问通过 genie-space 资源注入（服务主体 `CAN_RUN`，用户授权 scope 为 `genie`）。
+- app 名称与资源定义在 `databricks.yml`（`resources.apps.app`）；Genie 访问通过 genie-space 资源注入（服务主体 `CAN_RUN`）；用户授权 scope 为 `genie` 以及 `catalog.catalogs:read` / `catalog.schemas:read` / `catalog.tables:read`（dashboard 的 Unity Catalog 路由）。
 - 不要在生产设置 `GENIE_AGENT_MOCK`：本地 `.env` 已被 `sync.exclude` 排除，不会随部署上传。
 - 完整检查清单、权限模型、部署后验证与回滚：见 [docs/deployment.md](docs/deployment.md)。
 

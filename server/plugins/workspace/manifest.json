@@ -5,6 +5,7 @@
   "description": "Current user identity and Unity Catalog metadata (catalogs, schemas, tables) for the dashboard",
   "version": "0.1.0",
   "stability": "beta",
+  "scopes": ["catalog.catalogs:read", "catalog.schemas:read", "catalog.tables:read"],
   "resources": {
     "required": [],
     "optional": []

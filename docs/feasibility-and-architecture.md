@@ -55,7 +55,7 @@
 | 风险 | 概率/影响 | 对策 |
 |---|---|---|
 | 工作区未开放 Genie Agent 功能（`404 FEATURE_DISABLED`） | 中/高 | 一期交付可在 **Mock 模式**下完整演示与评审 UI；真实联通在 `docs/open-questions.md` 列明前置条件（agent_id、scope、feature 开关） |
-| OBO scope 不足：`user_api_scopes` 未包含 `genie` | 高/高 | `databricks.yml` 增补 `genie`（agent 必须，官方 genie 插件 manifest 即声明 `genie`）；部署后需在 Databricks 授权页确认用户授权 |
+| OBO scope 不足：`user_api_scopes` 未包含 `genie` / catalog read scopes | 高/高 | `databricks.yml` 增补 `genie`，以及 Unity Catalog 元数据所需的 `catalog.catalogs:read`、`catalog.schemas:read`、`catalog.tables:read`（`unity-catalog` 不是合法 Apps user scope）；部署后需在 Databricks 授权页确认用户授权，新增 scope 后用户需重新同意 |
 | Agent 事件与 Chat 结构不同，容易误用 | 中/中 | 严格按指南 §18.13 做 **Adapter 分离**：`AgentModeAdapter` 与 `MockAdapter` 接口一致、实现不同；Chat mode 一期不混用 |
 | SSE 跨块/重连解析错误 | 中/高 | 服务端用官方 `StreamManager` 透传；客户端用官方 `connectSSE`（已实现跨块缓冲、退避重试、`Last-Event-ID`） |
 | 预览表被误当完整结果 | 中/中 | UI 明示「预览行数/总行数」；完整结果引导用户前往 Genie/SQL（下载能力一期不做） |
@@ -70,7 +70,8 @@
 
 ```
 ┌─ Databricks Apps 运行时（app.yaml / databricks.yml）───────────────────┐
-│  user_api_scopes: [genie]                                              │
+│  user_api_scopes: [genie, catalog.catalogs:read, catalog.schemas:read,     │
+│                    catalog.tables:read]                                  │
 │  resources: genie-space(CAN_RUN) / sql-warehouse(CAN_USE, 可选)         │
 │             / database(CAN_CONNECT_AND_CREATE, 阶段2 可选)              │
 └──────────────────────────┬────────────────────────────────────────────┘

@@ -105,7 +105,9 @@ function baseUrl(client: WorkspaceClient): string {
   if (!host) {
     throw new GenieAgentRestError("Workspace client has no host configured", 500);
   }
-  return host.replace(/\/+$/, "");
+  // Databricks Apps injects DATABRICKS_HOST without a scheme; fetch() requires an absolute URL.
+  const withScheme = /^https?:\/\//i.test(host) ? host : `https://${host}`;
+  return withScheme.replace(/\/+$/, "");
 }
 
 /**
