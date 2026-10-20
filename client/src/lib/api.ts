@@ -23,9 +23,17 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
     let detail = `${response.status} ${response.statusText}`;
     let code: string | undefined;
     try {
-      const body = (await response.json()) as { error?: string; detail?: string; code?: string };
+      const body = (await response.json()) as {
+        error?: string;
+        detail?: string;
+        code?: string;
+        hint?: string;
+      };
       if (typeof body.error === 'string') {
         detail = body.detail ? `${body.error}: ${body.detail}` : body.error;
+      }
+      if (typeof body.hint === 'string' && body.hint) {
+        detail = `${detail} — ${body.hint}`;
       }
       code = body.code;
     } catch {

@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
   Badge,
   Button,
   Card,
@@ -28,6 +31,7 @@ import {
   TableRow,
 } from '@databricks/appkit-ui/react';
 import {
+  AlertCircle,
   ArrowRight,
   Database,
   FolderTree,
@@ -93,15 +97,20 @@ export function DashboardPage() {
   const alias = defaultAlias();
   const config = genieAgentConfig();
 
-  const { data: catalogs, loading: catalogsLoading } = useAsyncData(
-    () => workspaceApi.listCatalogs(),
-    [],
-  );
+  const {
+    data: catalogs,
+    loading: catalogsLoading,
+    error: catalogsError,
+  } = useAsyncData(() => workspaceApi.listCatalogs(), []);
   // `null` means "no explicit choice yet" — fall back to the first entry.
   const [catalogChoice, setCatalogChoice] = useState<string | null>(null);
   const catalog = catalogChoice ?? catalogs?.[0]?.name ?? null;
 
-  const { data: schemas, loading: schemasLoading } = useAsyncData(
+  const {
+    data: schemas,
+    loading: schemasLoading,
+    error: schemasError,
+  } = useAsyncData(
     () => (catalog ? workspaceApi.listSchemas(catalog) : Promise.resolve([])),
     [catalog],
   );
@@ -112,7 +121,11 @@ export function DashboardPage() {
     return schemas[0].name;
   }, [schemas, schemaChoice]);
 
-  const { data: tables, loading: tablesLoading } = useAsyncData(
+  const {
+    data: tables,
+    loading: tablesLoading,
+    error: tablesError,
+  } = useAsyncData(
     () => (catalog && schema ? workspaceApi.listTables(catalog, schema) : Promise.resolve([])),
     [catalog, schema],
   );
@@ -175,6 +188,14 @@ export function DashboardPage() {
           </Link>
         </Button>
       </div>
+
+      {(catalogsError || schemasError || tablesError) && (
+        <Alert variant="destructive">
+          <AlertCircle className="size-4" />
+          <AlertTitle>Unable to load Unity Catalog data</AlertTitle>
+          <AlertDescription>{catalogsError ?? schemasError ?? tablesError}</AlertDescription>
+        </Alert>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard

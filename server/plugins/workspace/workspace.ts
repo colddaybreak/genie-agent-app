@@ -188,6 +188,11 @@ export class WorkspacePlugin extends Plugin<WorkspacePluginConfig> {
     );
     res.status(status).json({
       error: `${action} failed`,
+      ...(status === 403
+        ? {
+            hint: "User authorization is missing the Unity Catalog read scopes. Ensure user_api_scopes includes catalog.catalogs:read, catalog.schemas:read and catalog.tables:read, then reopen the app and approve the consent prompt.",
+          }
+        : {}),
       ...(process.env.NODE_ENV !== "production" && error instanceof Error
         ? { detail: error.message }
         : {}),

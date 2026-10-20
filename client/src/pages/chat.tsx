@@ -112,7 +112,7 @@ export function ChatPage() {
               </div>
             </div>
           ) : (
-            <Timeline entries={entries} />
+            <Timeline entries={entries} running={showStop} />
           )}
 
           {failure && failure.code !== 'CANCELLED' && (

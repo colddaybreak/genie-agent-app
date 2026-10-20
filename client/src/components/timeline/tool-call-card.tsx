@@ -37,7 +37,7 @@ function parseArguments(raw: string): ParsedArguments {
 
 /** Tool invocation details: which tool ran, its title, and the exact SQL. */
 export function ToolCallCard({ item, running }: ToolCallCardProps) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const args = parseArguments(item.arguments);
 
   const copySql = async () => {

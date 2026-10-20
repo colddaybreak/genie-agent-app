@@ -24,6 +24,8 @@ interface QueryResultCardProps {
   item: FunctionCallOutputItem;
   /** Title carried by the paired function_call arguments, when available. */
   title?: string;
+  /** Hides the chart/table inside the thought process once the answer is done. */
+  compact?: boolean;
 }
 
 function ResultTable({ table, className }: { table: MarkdownTable; className?: string }) {
@@ -62,7 +64,7 @@ function ResultTable({ table, className }: { table: MarkdownTable; className?: s
  * query result, a row-count footer, and a fullscreen dialog for inspecting
  * the complete table (Genie One-style "expand" affordance).
  */
-export function QueryResultCard({ item, title }: QueryResultCardProps) {
+export function QueryResultCard({ item, title, compact = false }: QueryResultCardProps) {
   const [expanded, setExpanded] = useState(false);
   const parsed = useMemo(() => parseQueryOutput(item.output ?? ''), [item.output]);
   const statement = useMemo(() => (parsed.table ? tableToStatement(parsed.table) : null), [parsed.table]);
@@ -97,14 +99,19 @@ export function QueryResultCard({ item, title }: QueryResultCardProps) {
       </div>
 
       {statement ? (
-        <GenieQueryVisualization data={statement} />
+        compact ? null : <GenieQueryVisualization data={statement} />
       ) : (
-        <pre className="overflow-x-auto rounded bg-background/60 p-2 text-[11px] whitespace-pre-wrap break-words">
+        <pre
+          className={cn(
+            'overflow-x-auto rounded bg-background/60 p-2 text-[11px] whitespace-pre-wrap break-words',
+            compact && 'max-h-32 overflow-y-auto',
+          )}
+        >
           {item.output}
         </pre>
       )}
 
-      {parsed.after && (
+      {!compact && parsed.after && (
         <p className="text-[11px] text-muted-foreground">{parsed.after}</p>
       )}
 
