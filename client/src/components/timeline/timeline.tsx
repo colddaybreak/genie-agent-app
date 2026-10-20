@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { TimelineEntry } from '@/hooks/use-genie-agent-chat';
 import type { FunctionCallOutputItem } from '@/lib/genie-types';
+import { isChartableOutput } from '@/lib/markdown-table';
 import { AnswerChart } from './answer-chart';
 import { MessageBubble } from './message-bubble';
 import { ThoughtProcess } from './thought-process';
@@ -68,10 +69,13 @@ function TurnView({
 }) {
   const thinkingStart = turn.user?.startedAt ?? turn.steps[0]?.startedAt;
   const thinkingEnd = turn.steps[turn.steps.length - 1]?.endedAt;
+  // Only the last chartable result is attached to the answer; everything else
+  // stays inside the collapsed thought process (matches Genie message attachments).
   const charts = turn.steps.filter(
     (entry): entry is TimelineEntry & { item: FunctionCallOutputItem } =>
-      entry.item.type === 'function_call_output',
+      entry.item.type === 'function_call_output' && isChartableOutput(entry.item.output ?? ''),
   );
+  const finalChart = charts[charts.length - 1];
 
   return (
     <div className="flex flex-col gap-3">
@@ -87,17 +91,20 @@ function TurnView({
           titles={titles}
         />
       )}
-      {turn.answers.map((entry) =>
-        entry.item.type === 'message' ? (
-          <MessageBubble key={entry.key} item={entry.item} running={entry.phase !== 'done'} />
-        ) : null,
-      )}
-      {!running &&
-        charts.map((entry) => (
-          <div key={`chart_${entry.key}`} className="pl-11">
-            <AnswerChart item={entry.item} title={titles.get(entry.item.call_id)} />
-          </div>
-        ))}
+      {turn.answers.map((entry, index) => {
+        if (entry.item.type !== 'message') return null;
+        const isLastAnswer = index === turn.answers.length - 1;
+        return (
+          <MessageBubble key={entry.key} item={entry.item} running={entry.phase !== 'done'}>
+            {isLastAnswer && !running && finalChart && (
+              <AnswerChart
+                item={finalChart.item}
+                title={titles.get(finalChart.item.call_id)}
+              />
+            )}
+          </MessageBubble>
+        );
+      })}
     </div>
   );
 }

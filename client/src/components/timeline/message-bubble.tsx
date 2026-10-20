@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Avatar, AvatarFallback, Card } from '@databricks/appkit-ui/react';
 import { Markdown } from '@/components/markdown';
 import type { MessageItem } from '@/lib/genie-types';
@@ -7,10 +8,12 @@ import { cn } from '@/lib/utils';
 interface MessageBubbleProps {
   item: MessageItem;
   running: boolean;
+  /** Answer attachments (charts) rendered below the bubble, Genie-style. */
+  children?: ReactNode;
 }
 
 /** User/assistant conversation bubble, styled like the official GenieChatMessage. */
-export function MessageBubble({ item, running }: MessageBubbleProps) {
+export function MessageBubble({ item, running, children }: MessageBubbleProps) {
   const isUser = item.role === 'user';
   const text = messageText(item);
 
@@ -26,13 +29,18 @@ export function MessageBubble({ item, running }: MessageBubbleProps) {
           {isUser ? 'You' : 'AI'}
         </AvatarFallback>
       </Avatar>
-      <div className={cn('flex max-w-[80%] min-w-0 flex-col gap-2', isUser && 'items-end')}>
+      <div
+        className={cn(
+          'flex min-w-0 flex-col gap-2',
+          isUser ? 'max-w-[80%] items-end' : 'max-w-[92%] w-full',
+        )}
+      >
         <Card
           className={cn(
-            'w-fit max-w-full overflow-hidden px-4 py-3',
+            'max-w-full overflow-hidden px-4 py-3',
             isUser
-              ? 'bg-primary text-primary-foreground [&_*::selection]:bg-primary-foreground/30'
-              : 'bg-muted',
+              ? 'w-fit bg-primary text-primary-foreground [&_*::selection]:bg-primary-foreground/30'
+              : 'w-full bg-muted',
           )}
         >
           {text ? (
@@ -45,6 +53,7 @@ export function MessageBubble({ item, running }: MessageBubbleProps) {
             <TypingDots />
           ) : null}
         </Card>
+        {children}
       </div>
     </div>
   );

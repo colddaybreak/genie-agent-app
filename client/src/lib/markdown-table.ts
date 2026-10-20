@@ -56,3 +56,17 @@ export function parseQueryOutput(text: string): ParsedQueryOutput {
     table: { header, rows },
   };
 }
+
+const NUMERIC_CELL = /^-?[\d,]+(\.\d+)?%?$/;
+
+/**
+ * True when the payload contains a table that can back an answer chart
+ * (at least two columns and one numeric measure).
+ */
+export function isChartableOutput(text: string): boolean {
+  const { table } = parseQueryOutput(text);
+  if (!table || table.rows.length === 0 || table.header.length < 2) return false;
+  return table.header.some((_heading, index) =>
+    table.rows.some((row) => NUMERIC_CELL.test((row[index] ?? '').trim())),
+  );
+}

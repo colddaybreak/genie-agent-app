@@ -173,7 +173,7 @@ export function AnswerChart({ item, title }: AnswerChartProps) {
 
   if (!table) {
     return (
-      <Card className="min-w-0 max-w-[85%] gap-2 px-3 py-2 shadow-none">
+      <Card className="min-w-0 w-full gap-2 px-3 py-2 shadow-none">
         <div className="flex items-center gap-2">
           <Database className="size-3.5 shrink-0 text-muted-foreground" />
           <span className="truncate text-xs font-medium">{source}</span>
@@ -291,7 +291,7 @@ export function AnswerChart({ item, title }: AnswerChartProps) {
   );
 
   return (
-    <Card className="min-w-0 max-w-[85%] gap-2 px-3 py-2 shadow-none">
+    <Card className="min-w-0 w-full gap-2 px-3 py-2 shadow-none">
       <div className="flex items-center gap-2">
         <Database className="size-3.5 shrink-0 text-muted-foreground" />
         <span className="truncate text-xs font-medium">{source}</span>
